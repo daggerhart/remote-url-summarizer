@@ -32,8 +32,6 @@ class Remote_URL_Summarizer {
 
   // singleton instance
   static private $instance = null;
-
-  public $fetcher;
   
   /**
    * Access singleton instance

@@ -109,7 +109,8 @@ class Html {
 
     // if we got an image, sideload it
     if ( ! empty( $data['image']['src'] ) ){
-      $id = rurls_media_sideload_image( $data['image']['src'], 0, null, 'id' );
+      $post_id = get_the_ID() ? get_the_ID() : 0;
+      $id = rurls_media_sideload_image( $data['image']['src'], $post_id, null, 'id' );
 
       if ( ! is_wp_error( $id ) ){
         $data['image']['id'] = $id;

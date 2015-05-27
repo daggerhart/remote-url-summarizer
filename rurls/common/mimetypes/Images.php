@@ -47,10 +47,11 @@ class Images {
    */
   function sideload_images( $urls ){
     $images = array();
+    $post_id = get_the_ID() ? get_the_ID() : 0;
 
     foreach( $urls as $url ){
       // attempt to grab the image
-      $image_id = rurls_media_sideload_image( $url, 0, null, 'id');
+      $image_id = rurls_media_sideload_image( $url, $post_id, null, 'id');
 
       if ( ! is_wp_error( $image_id ) ) {
         $images[ $image_id ] = $url;

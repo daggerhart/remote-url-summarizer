@@ -72,13 +72,6 @@ class Settings {
         'type' => 'checkbox',
         'section' => 'rurls_summary_options',
       ),
-
-      'import_images' => array(
-        'title' => __('Import Images into Media Library'),
-        'description' => __('If the remote url is an image, sideload it into the WP Media Library'),
-        'type' => 'checkbox',
-        'section' => 'rurls_summary_options',
-      ),
       'image_size' => array(
         'title' => __('Image Size'),
         'description' => __('Size of images displayed in summary.'),

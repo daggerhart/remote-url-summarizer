@@ -45,7 +45,7 @@ class Fetch {
     if ( wp_is_post_revision( $post_id ) ){
       return;
     }  
-    if ( wp_is_post_autosave($post_id) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+    if ( wp_is_post_autosave( $post_id ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
       return;
     }
     
@@ -153,7 +153,10 @@ class Fetch {
 
     if ( $result ) {
       foreach ( $all_urls[0] as $i => $url ) {
-        if ( $this->is_remote_url( $url ) ) {
+        // clean the url before we start doing anything
+        $url = esc_url_raw( $url );
+        
+        if ( ! empty( $url ) && $this->is_remote_url( $url ) ) {
           $remote_urls[] = $url;
         }
       }

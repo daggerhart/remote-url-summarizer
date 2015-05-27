@@ -59,7 +59,7 @@ class Html {
   function get_fetched_data( $html ){
     $doc = new \DOMDocument();
     
-    // suppress HTML warnings
+    // suppress HTML5 warnings
     libxml_use_internal_errors(true);
     
     $doc->loadHTML( $html );
@@ -72,11 +72,11 @@ class Html {
 
     // construct a reliable array of data
     $data = array(
-      'title' => $doc->getElementsByTagName('title')->item(0)->nodeValue,
+      'title' => sanitize_text_field( $doc->getElementsByTagName('title')->item(0)->nodeValue ),
       'description' => '',
       'image' => array(
-        'src' => '',
-        'id' => false,
+        'src' => '',   // the original image src
+        'id' => false, // the generated image id if successfully sideloaded
       ),
     );
 
@@ -88,11 +88,11 @@ class Html {
       $meta_node = $metas->item($j);
 
       if ( $meta_node->getAttribute('property') == 'og:description' ){
-        $data['description'] = $meta_node->getAttribute('content');
+        $data['description'] = sanitize_text_field( $meta_node->getAttribute('content') );
       }
 
       if ( $meta_node->getAttribute('property') == 'og:image' ){
-        $data['image']['src'] = $meta_node->getAttribute('content');
+        $data['image']['src'] = esc_url_raw( $meta_node->getAttribute('content') );
       }
     }
 
@@ -102,7 +102,7 @@ class Html {
         $meta_node = $metas->item($j);
 
         if ( $meta_node->getAttribute('name') == 'description' ){
-          $data['description'] = $meta_node->getAttribute('content');
+          $data['description'] = sanitize_text_field( $meta_node->getAttribute('content') );
         }
       }
     }
@@ -130,7 +130,7 @@ class Html {
     ob_start();
     
     foreach( $fetched_data as $i => $data ){
-      if ( ! empty( $data['title'] ) && !empty( $data['description'] ) ) {
+      if ( ! empty( $data['title'] ) && ! empty( $data['description'] ) ) {
         $this->template_html_row( $data ); 
       }
     }
@@ -148,9 +148,9 @@ class Html {
     <div class="rurls-html-row">
       <?php if ( $data['title'] ) { ?>
         <h4 class="rurls-html-title">
-          <a href="<?php print esc_attr( $data['url'] ); ?>" target="_blank"><?php print $data['title']; ?></a>
+          <a href="<?php print esc_url( $data['url'] ); ?>" target="_blank"><?php print esc_html( $data['title'] ); ?></a>
         </h4>
-        <div class="rurls-html-url"><?php print $data['url']; ?></div>
+        <div class="rurls-html-url"><?php print esc_url( $data['url'] ); ?></div>
       <?php } ?>
       
       <?php if ( $data['image']['id'] ) { ?>
@@ -160,7 +160,7 @@ class Html {
       <?php } ?>
       
       <?php if ( $data['description'] ) { ?>
-        <p class="rurls-html-description"><?php print $data['description']; ?></p>
+        <p class="rurls-html-description"><?php print esc_html( $data['description'] ); ?></p>
       <?php } ?>
     </div>
     <?php

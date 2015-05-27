@@ -87,7 +87,7 @@ class Display {
     // wrap the summary and return
     ob_start();
     ?>
-      <div class="rurls-summary"><?php print $summary; ?></div>
+      <div class="rurls-summary"><?php print wp_kses_post( $summary ); ?></div>
     <?php
     return ob_get_clean();
   }

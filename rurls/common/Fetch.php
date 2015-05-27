@@ -38,25 +38,36 @@ class Fetch {
    * @param $post_id
    */
   function save_post( $post_id ){
+    // ignore auto-draft, autosave, and revisions
+    if ( get_post_status( $post_id ) == 'auto-draft' ) {
+      return;
+    } 
+    if ( wp_is_post_revision( $post_id ) ){
+      return;
+    }  
+    if ( wp_is_post_autosave($post_id) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+      return;
+    }
+    
     // make sure we have the required functions
     $this->load_required_media_files();
-    
+
     $scanned = get_post_meta( $post_id, RURLS_META_KEY_SCANNED, true );
     $scanned = $scanned ? true : false;
-    
+
     // only scan if never scanned before
     if ( $scanned ){
       return;
     }
-    
+
     // make sure this post_type is enabled
     if ( ! rurls_post_type_enabled( get_post_type( $post_id ) ) ){
       return;
     }
-    
+
     // get that post yo!
     $post = get_post( $post_id );
-    
+
     // get the urls
     $remote_urls = $this->find_remote_urls( $post->post_content );
     

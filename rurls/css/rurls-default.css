@@ -1,0 +1,41 @@
+.rurls-summary {
+    clear: left;
+    margin-left: 5%;
+    border-left: 2px solid #777;
+    padding-left: 5%;
+}
+.rurls-summary:after {
+    visibility: hidden;
+    display: block;
+    content: ' ';
+    float: none;
+    clear: both;
+    height: 0;
+}
+.rurls-images {}
+.rurls-image {}
+
+.rurls-html-row {
+    clear: left;
+    margin-bottom: 1em;
+}
+h4.rurls-html-title {
+    margin-bottom: 0;
+}
+.rurls-html-url {
+    margin-bottom: 1em;
+    font-size: 0.8em;
+    color: #666;
+}
+.rurls-html-image {
+    float: left;
+    padding: 1px;
+    border: 1px solid #bbb;
+    margin: 4px 12px 4px 0;
+}
+.rurls-html-image img {
+    display: block;
+    margin: 0;
+}
+
+.rurls-html-description {}

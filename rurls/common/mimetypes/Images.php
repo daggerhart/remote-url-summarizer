@@ -62,19 +62,21 @@ class Images {
   }
   
   /**
+   * Display callback for default image mimetypes
+   * 
    * @param $data array
    * @return string
    */
   function display_images( $data ){
     ob_start();
     ?>
-    <div class="rurls-images">
+    <span class="rurls-images">
       <?php foreach( $data as $id => $original_src ){ ?>
         <span class="rurls-image">
           <?php print wp_get_attachment_image( $id, $this->settings['image_size'] ); ?>
         </span>
       <?php } ?>
-    </div>
+    </span>
     <?php
     return ob_get_clean();
   }

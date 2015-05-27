@@ -154,7 +154,7 @@ class Html {
       <?php } ?>
       
       <?php if ( $data['image']['id'] ) { ?>
-          <span class="rurls-image">
+          <span class="rurls-html-image">
             <?php print wp_get_attachment_image( $data['image']['id'], $this->settings['image_size'] ); ?>
           </span>
       <?php } ?>

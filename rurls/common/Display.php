@@ -9,6 +9,10 @@ class Display {
   function __construct( $settings ){
     $this->settings = $settings;
 
+    if ( $this->settings['default_stylesheet'] ) {
+      add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_default_stylesheet' ) );
+    }
+    
     // post type hooks
     if ( rurls_post_type_enabled() ){
       add_filter( 'the_content', array( $this, 'the_content' ), 9999 );
@@ -18,6 +22,13 @@ class Display {
     if ( $this->settings['comment_summary'] ){
       add_filter( 'comment_text', array( $this, 'comment_text' ), 9999, 2 );
     }
+  }
+
+  /**
+   * 
+   */
+  function enqueue_default_stylesheet(){
+    wp_enqueue_style( 'rurls-default', RURLS_PLUGIN_URL . '/rurls/css/rurls-default.css', array(), RURLS_VERSION );
   }
 
   /**

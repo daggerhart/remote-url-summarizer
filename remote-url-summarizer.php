@@ -8,7 +8,9 @@ Author URI: http://www.daggerhart.com
 License: GPLv2 Copyright (c) 2015 daggerhart
 */
 
+define( 'RURLS_VERSION', '1.0' );
 define( 'RURLS_PLUGIN_DIR', dirname( __FILE__ ) );
+define( 'RURLS_PLUGIN_URL', plugins_url( basename( RURLS_PLUGIN_DIR ) ) );
 define( 'RURLS_SETTINGS_NAME', 'rurls_settings' );
 define( 'RURLS_META_KEY_SCANNED', 'rurls_scanned' );
 define( 'RURLS_META_KEY_URLS', 'rurls_remote_urls' );
@@ -25,6 +27,7 @@ class Remote_URL_Summarizer {
       'post' => 1
     ),
     'image_size' => 'thumbnail',
+    'default_stylesheet' => 1,
   );
 
   // storage for plugin settings

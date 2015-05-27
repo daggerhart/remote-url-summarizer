@@ -86,6 +86,12 @@ class Settings {
         'section' => 'rurls_summary_options',
         'sanitize' => array( $this, 'sanitize_textarea' ),
       ),
+      'default_stylesheet' => array(
+        'title' => __('Default Stylesheet'),
+        'description' => __('Include the default stylesheet during summary output.'),
+        'type' => 'checkbox',
+        'section' => 'rurls_summary_options',
+      ),
     );
 
     $fields = apply_filters( 'rurls-settings-fields', $fields );

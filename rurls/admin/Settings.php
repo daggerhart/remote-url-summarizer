@@ -79,6 +79,13 @@ class Settings {
         'options' => array_combine( $image_sizes, $image_sizes ),
         'section' => 'rurls_summary_options',
       ),
+      'domain_blacklist' => array(
+        'title' => __('Domain Blacklist'),
+        'description' => __('List domains that should not be remotely fetched. Place one domain per line, without http protocol. Useful if having conflicts with this plugin and your CDN.'),
+        'type' => 'textarea',
+        'section' => 'rurls_summary_options',
+        'sanitize' => array( $this, 'sanitize_textarea' ),
+      ),
     );
 
     $fields = apply_filters( 'rurls-settings-fields', $fields );
@@ -127,7 +134,11 @@ class Settings {
         case 'select':
           $callback = 'do_select';
           break;
-
+        
+        case 'textarea':
+          $callback = 'do_textarea';
+          break;
+        
         case 'text':
         default:
           $callback = 'do_text_field';
@@ -193,8 +204,12 @@ class Settings {
     // loop through settings fields to control what we're saving
     foreach ( $this->settings_fields as $key => $field ) {
       if ( isset( $input[ $key ] ) ){
+        // allow fields to provide their own sanitization method
+        if ( isset( $field['sanitize'] ) && is_callable( $field['sanitize'] ) ) {
+          $options[ $key ] = call_user_func( $field['sanitize'], $input[ $key ] );
+        }
         // arrays
-        if ( is_array( $input[ $key ] ) ) {
+        else if ( is_array( $input[ $key ] ) ) {
           array_walk( $input[ $key ], 'sanitize_text_field');
           $options[ $key ] = $input[ $key ]; 
         }
@@ -212,6 +227,32 @@ class Settings {
   }
 
   /**
+   * Simple method for sanitizing textareas per line
+   * 
+   * @param $input
+   * @return string
+   */
+  function sanitize_textarea( $input){
+    // break up into lines
+    $lines = explode( "\n", $input );
+    $save = array();
+    
+    // sanitize each line
+    foreach ( $lines as $line ){
+      $line = sanitize_text_field( trim( $line ) );
+      
+      if ( ! empty( $line ) ){
+        $save[] = $line;
+      }
+    }
+    
+    // and re-combine lines
+    $output = implode( "\n", $save );
+    
+    return $output;
+  }
+  
+  /**
    * Output a standard text field
    *
    * @param $field
@@ -223,6 +264,24 @@ class Settings {
            class="large-text"
            name="<?php print esc_attr( $field['name'] ); ?>"
            value="<?php print esc_attr( $this->settings[ $field['key'] ] ); ?>">
+    <?php
+    $this->do_field_description( $field );
+  }
+  
+  /**
+   * Output a standard text field
+   *
+   * @param $field
+   */
+  function do_textarea( $field ) {
+    ?>
+    <textarea
+      rows="5"
+      id="<?php print esc_attr( $field['key'] ); ?>"
+      class="large-text"
+      name="<?php print esc_attr( $field['name'] ); ?>"
+      ><?php print esc_textarea( $this->settings[ $field['key'] ] ); ?></textarea>
+    
     <?php
     $this->do_field_description( $field );
   }

@@ -21,18 +21,6 @@ class Fetch {
   }
 
   /**
-   * Depending on where this is happening, 
-   * we may need to load some core WP files for fetching media
-   */
-  function load_required_media_files(){
-    if ( ! function_exists( 'media_sideload_image' ) ) {
-      require_once ABSPATH . '/wp-admin/includes/media.php';
-      require_once ABSPATH . '/wp-admin/includes/file.php';
-      require_once ABSPATH . '/wp-admin/includes/image.php';
-    }
-  }
-
-  /**
    * Implements action hook 'save_post'
    *
    * @param $post_id
@@ -48,36 +36,39 @@ class Fetch {
     if ( wp_is_post_autosave( $post_id ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
       return;
     }
-    
-    // make sure we have the required functions
-    $this->load_required_media_files();
-
-    $scanned = get_post_meta( $post_id, RURLS_META_KEY_SCANNED, true );
-    $scanned = $scanned ? true : false;
-
-    // only scan if never scanned before
-    if ( $scanned ){
-      return;
-    }
 
     // make sure this post_type is enabled
     if ( ! rurls_post_type_enabled( get_post_type( $post_id ) ) ){
       return;
     }
 
+    $scanned = get_post_meta( $post_id, RURLS_META_KEY_SCANNED, true );
+    $scanned = $scanned ? true : false;
+
+    // only scan if not scanned
+    if ( $scanned ){
+      return;
+    }
+    
+    // since we're scanning, let's make sure no old data is laying around
+    // this gives the added benefit of allowing the user to cause a
+    // re-scan by deleting the boolean field
+    delete_post_meta( $post_id, RURLS_META_KEY_DATA );
+    delete_post_meta( $post_id, RURLS_META_KEY_DATA );
+    
     // get that post yo!
     $post = get_post( $post_id );
 
     // get the urls
-    $remote_urls = $this->find_remote_urls( $post->post_content );
+    $remote_urls = $this->find_valid_urls( $post->post_content );
     
     // if links are found, sort them
     if ( $remote_urls ) {
-      $sorted_remote_urls = $this->sort_remote_urls( $remote_urls );
+      $sorted_remote_urls = $this->sort_urls( $remote_urls );
 
-      // if execute the appropriate fetch_callbacks
+      // if we have urls, execute the appropriate fetch_callbacks
       if ( ! empty( $sorted_remote_urls ) ) {
-        $fetched_data = $this->fetch_remote_data( $sorted_remote_urls );
+        $fetched_data = $this->fetch_urls_data( $sorted_remote_urls );
         
         // save fetched data according to the mimetype handler
         update_post_meta( $post_id, RURLS_META_KEY_DATA, $fetched_data );
@@ -97,17 +88,6 @@ class Fetch {
    * @param $comment_id
    */
   function save_comment( $comment_id ){
-    // make sure we have the required functions
-    $this->load_required_media_files();
-    
-    $scanned = get_comment_meta( $comment_id, RURLS_META_KEY_SCANNED, true );
-    $scanned = $scanned ? true : false;
-
-    // only scan links if never scanned before
-    if ( $scanned ) {
-      return;
-    }
-    
     // grab the comment itself
     $comment = get_comment( $comment_id );
 
@@ -116,16 +96,28 @@ class Fetch {
       return;
     }
 
+    $scanned = get_comment_meta( $comment_id, RURLS_META_KEY_SCANNED, true );
+    $scanned = $scanned ? true : false;
+
+    // only scan links if never scanned before
+    if ( $scanned ) {
+      return;
+    }
+
+    // since we're scanning, let's make sure no old data is laying around
+    delete_comment_meta( $comment_id, RURLS_META_KEY_DATA );
+    delete_comment_meta( $comment_id, RURLS_META_KEY_DATA );
+    
     // get the urls
-    $remote_urls = $this->find_remote_urls( $comment->comment_content );
+    $remote_urls = $this->find_valid_urls( $comment->comment_content );
 
     // if links are found, sort them
     if ( $remote_urls ) {
-      $sorted_remote_urls = $this->sort_remote_urls( $remote_urls );
+      $sorted_remote_urls = $this->sort_urls( $remote_urls );
 
       // execute the appropriate fetch_callbacks
       if ( ! empty( $sorted_remote_urls ) ) {
-        $fetched_data = $this->fetch_remote_data( $sorted_remote_urls );
+        $fetched_data = $this->fetch_urls_data( $sorted_remote_urls );
         
         // save fetched data according to the mimetype handler
         update_comment_meta( $comment_id, RURLS_META_KEY_DATA, $fetched_data );
@@ -140,23 +132,27 @@ class Fetch {
   }
 
   /**
-   * Scrap the content to find remote urls
+   * Scrap the content to find urls
+   * Ensure they are:
+   *  - sanitized
+   *  - remote
+   *  - not blacklisted
    * 
    * @param $content
    * @return array|bool
    */
-  function find_remote_urls( $content ){
+  function find_valid_urls( $content ){
     $all_urls = array();
     $result = preg_match_all('/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i', $content, $all_urls);
     $remote_urls = array();
-
-
+    
     if ( $result ) {
       foreach ( $all_urls[0] as $i => $url ) {
         // clean the url before we start doing anything
-        $url = esc_url_raw( $url );
+        $url = esc_url_raw( trim( $url ) );
         
-        if ( ! empty( $url ) && $this->is_remote_url( $url ) ) {
+        // ensure the url is remote and not blacklisted
+        if ( ! empty( $url ) && $this->is_remote_url( $url ) && ! $this->is_blacklisted( $url ) ) {
           $remote_urls[] = $url;
         }
       }
@@ -179,34 +175,29 @@ class Fetch {
    * @param $urls array
    * @return array
    */
-  function sort_remote_urls( $urls ){
+  function sort_urls( $urls ){
     $sorted_urls = array();
 
     foreach( $urls as $url ){
-      $url = trim( $url );
+      // grab the file header for determining type
+      $response = wp_remote_head( $url );
 
-      // don't fetch local
-      if ( $this->is_remote_url( $url ) ) {
+      // no errors allowed
+      if ( is_wp_error( $response ) ) {
+        continue;
+      }
 
-        // grab the file header for determining type
-        $response = wp_remote_head( $url );
+      // only legit urls
+      if ( $response['response']['code'] != '200' ) {
+        continue;
+      }
 
-        // no errors allowed
-        if ( is_wp_error( $response ) ) {
-          continue;
-        }
-
-        // only legit urls
-        if ( $response['response']['code'] != '200' ) {
-          continue;
-        }
-
-        // we only care about the content-type for sorting
-        if ( isset( $response['headers']['content-type'] ) ) {
-          $mime_type = explode(';', $response['headers']['content-type']);
-          // images
-          $sorted_urls[ $mime_type[0] ][] = $url;
-        }
+      // we only care about the content-type for sorting
+      if ( isset( $response['headers']['content-type'] ) ) {
+        $mime_type = explode(';', $response['headers']['content-type']);
+        
+        // sort by mimetype
+        $sorted_urls[ $mime_type[0] ][] = $url;
       }
     }
 
@@ -219,7 +210,7 @@ class Fetch {
    * @param $sorted_remote_urls
    * @return array
    */
-  function fetch_remote_data( $sorted_remote_urls ){
+  function fetch_urls_data( $sorted_remote_urls ){
     $fetched_data = array();
 
     foreach ( rurls_get_mime_types() as $type => $details ) {
@@ -268,5 +259,23 @@ class Fetch {
     }
 
     return strtolower( $site ) != strtolower( $other );
-  }  
+  }
+
+  /**
+   * Determine if a remote_url is blacklisted from being fetched
+   * 
+   * @param $url
+   * @return bool
+   */
+  function is_blacklisted( $url ){
+    if ( empty( $this->settings['domain_blacklist'] ) ) {
+      return false;
+    }
+    
+    $host = parse_url( $url, PHP_URL_HOST );
+    $blacklist = explode( "\n", $this->settings['domain_blacklist'] );
+    array_walk( $blacklist, 'trim' );
+    
+    return in_array( strtolower( $host ), $blacklist );
+  }
 }

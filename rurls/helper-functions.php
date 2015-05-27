@@ -54,6 +54,14 @@ function rurls_get_mime_types(){
  * @return string|WP_Error Populated HTML img tag on success
  */
 function rurls_media_sideload_image( $file, $post_id, $desc = null, $return = 'html' ) {
+  // make sure we have all the functions we need to do a complete sideload
+  // from the front end (comments)
+  if ( ! function_exists( 'media_sideload_image' ) ) {
+    require_once ABSPATH . '/wp-admin/includes/media.php';
+    require_once ABSPATH . '/wp-admin/includes/file.php';
+    require_once ABSPATH . '/wp-admin/includes/image.php';
+  }
+  
   if ( ! empty( $file ) ) {
     // Set variables for storage, fix file filename for query strings.
     preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $file, $matches );

@@ -64,14 +64,14 @@ class Remote_URL_Summarizer {
     include_once RURLS_PLUGIN_DIR . '/rurls/helper-functions.php';
     
     // common classes
-    new Rurls\Common\Fetch( $this->get_settings() );
-    new Rurls\Common\Display( $this->get_settings() );
-    new Rurls\Common\Mimetypes\Images( $this->get_settings() );
-    new Rurls\Common\Mimetypes\Html( $this->get_settings() );
+    new \Rurls\Common\Fetch( $this->get_settings() );
+    new \Rurls\Common\Display( $this->get_settings() );
+    new \Rurls\Common\Mimetypes\Images( $this->get_settings() );
+    new \Rurls\Common\Mimetypes\Html( $this->get_settings() );
 
     // admin only
     if ( is_admin() ) {
-      new Rurls\Admin\Settings( $this->get_settings() );
+      new \Rurls\Admin\Settings( $this->get_settings() );
     }
   }
 

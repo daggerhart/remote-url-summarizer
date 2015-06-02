@@ -10,7 +10,7 @@
     content: ' ';
     float: none;
     clear: both;
-    height: 0;
+    height: 1px;
 }
 .rurls-images {}
 .rurls-image {}
@@ -29,13 +29,15 @@ h4.rurls-html-title {
 }
 .rurls-html-image {
     float: left;
-    padding: 1px;
-    border: 1px solid #bbb;
     margin: 4px 12px 4px 0;
+    padding: 0;
 }
 .rurls-html-image img {
-    display: block;
+    background: #fff;
+    border: 1px solid #bbb;
+    padding: 1px;
     margin: 0;
+    display: block;
 }
 
 .rurls-html-description {}

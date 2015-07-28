@@ -51,15 +51,19 @@ class Display {
   }
 
   /**
-   * Implements filter 'get_comment_text'
+   * Implements filter 'comment_text'
+   * Warning: 'comment_text' filter used different depending on when executed
    * 
    * @param $content
-   * @param $comment
+   * @param $comment (optional) but required to work for rurls
+   *        /wp-includes/comment.php - does not pass the $comment object, only the content
+   *        /wp-includes/comment-template.php - passes $content, $comment, $args
+   * 
    * @return mixed
    */
-  function comment_text( $content, $comment ){
+  function comment_text( $content, $comment = false ){
     // only enabled post_types
-    if ( rurls_post_type_enabled( get_post_type( $comment->comment_post_ID ) ) ) {
+    if ( $comment && rurls_post_type_enabled( get_post_type( $comment->comment_post_ID ) ) ) {
       $data = get_comment_meta( $comment->comment_ID, RURLS_META_KEY_DATA, true );
       
       if ( !empty( $data ) ){

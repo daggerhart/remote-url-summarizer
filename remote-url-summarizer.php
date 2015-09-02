@@ -2,15 +2,15 @@
 /*
 Plugin Name: Remote URL Summarizer
 Description: Scan remote / external links with a post or comments, and provide a summary of the scanned links during display.
-Version: 1.0
+Plugin URI: https://github.com/daggerhart/remote-url-summarizer
+Version: 1.1
 Author: daggerhart
 Author URI: http://www.daggerhart.com
 License: GPLv2 Copyright (c) 2015 daggerhart
 */
 
-define( 'RURLS_VERSION', '1.0' );
+define( 'RURLS_VERSION', '1.1' );
 define( 'RURLS_PLUGIN_DIR', dirname( __FILE__ ) );
-define( 'RURLS_PLUGIN_URL', plugins_url( basename( RURLS_PLUGIN_DIR ) ) );
 define( 'RURLS_SETTINGS_NAME', 'rurls_settings' );
 define( 'RURLS_META_KEY_SCANNED', 'rurls_scanned' );
 define( 'RURLS_META_KEY_URLS', 'rurls_remote_urls' );
@@ -60,6 +60,8 @@ class Remote_URL_Summarizer {
    * Complete the requirements of this plugin
    */
   function init(){
+    define( 'RURLS_PLUGIN_URL', plugins_url( basename( RURLS_PLUGIN_DIR ) ) );
+    
     // common files
     include_once RURLS_PLUGIN_DIR . '/rurls/helper-functions.php';
     

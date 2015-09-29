@@ -3,7 +3,7 @@
 Plugin Name: Remote URL Summarizer
 Description: Scan remote / external links with a post or comments, and provide a summary of the scanned links during display.
 Plugin URI: https://github.com/daggerhart/remote-url-summarizer
-Version: 1.1
+Version: 1.2
 Author: daggerhart
 Author URI: http://www.daggerhart.com
 License: GPLv2 Copyright (c) 2015 daggerhart

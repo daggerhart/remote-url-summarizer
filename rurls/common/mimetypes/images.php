@@ -74,9 +74,16 @@ class Images {
 		ob_start();
 		?>
 		<span class="rurls-images">
-			<?php foreach ( $data as $id => $original_src ) { ?>
-				<span class="rurls-image"><?php print wp_get_attachment_image( $id, $this->settings['image_size'] ); ?></span>
-			<?php } ?>
+			<?php 
+				foreach ( $data as $id => $original_src ) 
+				{ 
+					// cropped gifs will not be animated
+					$size = ( get_post_mime_type( $id ) === 'image/gif' ) ? 'full' : $this->settings['image_size'];
+					?>
+					<span class="rurls-image"><?php print wp_get_attachment_image( $id, $size ); ?></span>
+					<?php 
+				} 
+			?>
         </span>
 		<?php
 		return ob_get_clean();

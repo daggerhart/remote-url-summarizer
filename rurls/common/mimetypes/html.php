@@ -64,6 +64,11 @@ class Html {
 		// suppress HTML5 warnings
 		libxml_use_internal_errors( TRUE );
 
+		// attempt to handle encoding issues
+		if ( function_exists( 'mb_convert_encoding' ) ){
+			$html = mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8');
+		}
+		
 		$doc->loadHTML( $html );
 
 		// restore error messages

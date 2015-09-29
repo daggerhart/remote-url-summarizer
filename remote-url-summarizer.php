@@ -9,7 +9,7 @@ Author URI: http://www.daggerhart.com
 License: GPLv2 Copyright (c) 2015 daggerhart
 */
 
-define( 'RURLS_VERSION', '1.1' );
+define( 'RURLS_VERSION', '1.2' );
 define( 'RURLS_PLUGIN_DIR', dirname( __FILE__ ) );
 define( 'RURLS_SETTINGS_NAME', 'rurls_settings' );
 define( 'RURLS_META_KEY_SCANNED', 'rurls_scanned' );
